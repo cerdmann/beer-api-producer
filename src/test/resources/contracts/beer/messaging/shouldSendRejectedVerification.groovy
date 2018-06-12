@@ -8,6 +8,9 @@ Contract.make {
   """)
 
   label "rejected_verification"
+  input {
+    triggeredBy("clientIsTooYoung()")
+  }
   outputMessage {
     sentTo "verifications"
     body(eligible: false)

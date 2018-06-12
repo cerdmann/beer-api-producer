@@ -8,20 +8,23 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class ProducerController {
 
-	private final PersonCheckingService personCheckingService;
+  private final PersonCheckingService personCheckingService;
 
-	public ProducerController(PersonCheckingService personCheckingService) {
-		this.personCheckingService = personCheckingService;
-	}
+  public ProducerController(PersonCheckingService personCheckingService) {
+    this.personCheckingService = personCheckingService;
+  }
 
-	@RequestMapping(value = "/check",
-			method=RequestMethod.POST,
-			consumes="application/json",
-			produces="application/json")
-	public Response check(@RequestBody PersonToCheck personToCheck) {
-		return null;
-	}
-	
+  @RequestMapping(value = "/check",
+      method = RequestMethod.POST,
+      consumes = "application/json",
+      produces = "application/json")
+  public Response check(@RequestBody PersonToCheck personToCheck) {
+    if (personCheckingService.shouldGetBeer(personToCheck)) {
+      return new Response(BeerCheckStatus.OK);
+    }
+
+    return new Response((BeerCheckStatus.NOT_OK));
+  }
 }
 
 interface PersonCheckingService {

@@ -8,6 +8,9 @@ Contract.make {
   """)
 
   label "accepted_verification"
+  input {
+    triggeredBy("clientIsOldEnough()")
+  }
   outputMessage {
     sentTo "verifications"
     body(eligible: true)
