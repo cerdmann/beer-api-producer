@@ -21,6 +21,9 @@ buildscript {
 	}
 }
 
+group = 'com.example'
+version = getProp('newVersion') ?: '0.0.1-SNAPSHOT'
+
 ext {
 	projectGroupId = project.group
 	projectArtifactId = project.name
@@ -28,9 +31,6 @@ ext {
 	// due to CF multiport binding issues we need to hardcode the values
 	stubrunnerIds = 'com.example.github:github-webhook:+:stubs:10000'
 }
-
-group = 'com.example'
-version = getProp('newVersion') ?: '0.0.1-SNAPSHOT'
 
 repositories {
 	mavenCentral()
