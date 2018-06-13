@@ -1,0 +1,8 @@
+---
+applications:
+- name: beer-api-producer 
+  services:
+    - beer-rabbitmq
+  env:
+    SPRING_PROFILES_ACTIVE: cloud
+    DEBUG: "true"
