@@ -2,7 +2,8 @@ spring:
     application.name: beer-api-producer
     cloud.stream.bindings.output:
         content-type: application/json
-server.port: ${PORT:8080}
+        destination: verifications
+server.port: ${PORT:8090}
 logging:
   level:
     org.springframework.cloud: debug

@@ -5,6 +5,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+enum BeerCheckStatus {
+  OK, NOT_OK
+}
+
+interface PersonCheckingService {
+  Boolean shouldGetBeer(PersonToCheck personToCheck);
+}
+
 @RestController
 public class ProducerController {
 
@@ -23,33 +31,25 @@ public class ProducerController {
       return new Response(BeerCheckStatus.OK);
     }
 
-    return new Response((BeerCheckStatus.NOT_OK));
+    return new Response(BeerCheckStatus.NOT_OK);
   }
 }
 
-interface PersonCheckingService {
-	Boolean shouldGetBeer(PersonToCheck personToCheck);
-}
-
 class PersonToCheck {
-	public int age;
+  public int age;
 
-	public PersonToCheck(int age) {
-		this.age = age;
-	}
+  public PersonToCheck(int age) {
+    this.age = age;
+  }
 
-	public PersonToCheck() {
-	}
+  public PersonToCheck() {
+  }
 }
 
 class Response {
-	public BeerCheckStatus status;
-	
-	Response(BeerCheckStatus status) {
-		this.status = status;
-	}
-}
+  public BeerCheckStatus status;
 
-enum BeerCheckStatus {
-	OK, NOT_OK
+  Response(BeerCheckStatus status) {
+    this.status = status;
+  }
 }

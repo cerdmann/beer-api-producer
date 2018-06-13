@@ -1,4 +1,4 @@
-package contracts.beer.rest
+package beer.rest
 
 import org.springframework.cloud.contract.spec.Contract
 
@@ -10,7 +10,7 @@ Contract.make {
   request {
     method POST()
     url "/check"
-    body(age:$(regex('[0-1][0-9]')))
+    body(age:$(regex('[0-9]|[2][0]|[1][0-9]')))
     headers {
       contentType(applicationJson())
     }

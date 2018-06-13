@@ -31,7 +31,7 @@ public abstract class BeerRestBase {
     return new TypeSafeMatcher<PersonToCheck>() {
       @Override
       protected boolean matchesSafely(PersonToCheck personToCheck) {
-        return personToCheck.age >= 20;
+        return personToCheck.age >= 21;
       }
 
       @Override
