@@ -1,3 +1,11 @@
+apply plugin: 'groovy'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'spring-cloud-contract'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'maven-publish'
+apply from: 'gradle/pipeline.gradle'
+
+
 buildscript {
 	repositories {
 		mavenCentral()
@@ -13,27 +21,60 @@ buildscript {
 	}
 }
 
+ext {
+	projectGroupId = project.group
+	projectArtifactId = project.name
+	projectVersion = project.version
+	// due to CF multiport binding issues we need to hardcode the values
+	stubrunnerIds = 'com.example.github:github-webhook:+:stubs:10000'
+}
+
 group = 'com.example'
-version = '0.0.1-SNAPSHOT'
+version = getProp('newVersion') ?: '0.0.1-SNAPSHOT'
 
 repositories {
 	mavenCentral()
 	mavenLocal()
+	if (getProp("M2_LOCAL")) {
+		maven {
+			url getProp("M2_LOCAL")
+		}
+	}
 	maven { url "http://repo.spring.io/snapshot" }
 	maven { url "http://repo.spring.io/milestone" }
 	maven { url "http://repo.spring.io/release" }
 }
-
-apply plugin: 'groovy'
-apply plugin: 'org.springframework.boot'
-apply plugin: 'maven-publish'
-apply plugin: 'spring-cloud-contract'
 
 dependencyManagement {
 	imports {
 		mavenBom "org.springframework.cloud:spring-cloud-dependencies:$BOM_VERSION"
 	}
 }
+
+if (gradle.startParameter.taskRequests.any { it.args.contains("apiCompatibility") }) {
+	contracts {
+		baseClassForTests = 'com.example.BeerRestBase'
+		basePackageForTests = 'com.example'
+		contractsPath = "/"
+		contractRepository {
+			repositoryUrl(getProp('REPO_WITH_JARS') ?:
+					getProp('REPO_WITH_BINARIES') ?: 'http://localhost:8081/artifactory/libs-release-local')
+		}
+		setContractsMode("REMOTE")
+		contractDependency {
+			groupId = project.group
+			artifactId = project.name
+			delegate.classifier = "stubs"
+			delegate.version = getProp("latestProductionVersion")
+		}
+	}
+} else {
+	contracts {
+		baseClassForTests = 'com.example.BeerRestBase'
+		basePackageForTests = 'com.example'
+	}
+}
+
 
 dependencies {
   compile("org.springframework.boot:spring-boot-starter-web")
@@ -44,15 +85,45 @@ dependencies {
   testCompile("org.springframework.cloud:spring-cloud-starter-contract-verifier")
 }
 
+publishing {
+	repositories {
+		maven {
+			url getProp('REPO_WITH_BINARIES_FOR_UPLOAD') ?:
+					getProp('REPO_WITH_BINARIES') ?: 'http://localhost:8081/artifactory/libs-release-local'
+			credentials {
+				username getProp('M2_SETTINGS_REPO_USERNAME') ?: 'admin'
+				password getProp('M2_SETTINGS_REPO_PASSWORD') ?: 'password'
+			}
+		}
+	}
+	publications {
+		mavenJava(MavenPublication) {
+			artifactId project.name
+			from components.java
+		}
+	}
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '4.7'
+}
+
+String getProp(String propName) {
+	return hasProperty(propName) ?
+			(getProperty(propName) ?: System.properties[propName]) : System.properties[propName] ?:
+			System.getenv(propName)
+}
+
+test {
+	afterTest { desc, result ->
+		logger.quiet "Executing test ${desc.name} [${desc.className}] with result: ${result.resultType}"
+	}
+}
 
 test {
 	testLogging {
 		exceptionFormat = 'full'
 	}
-}
-
-task wrapper(type: Wrapper) {
-    gradleVersion = '3.5'
 }
 
 contracts {
